@@ -27,3 +27,4 @@ obj/Debug/AutoEnum.exe
 obj/Debug/AutoEnum.pdb
 obj/x64/Release/AutoEnum.pdb
 obj/x64/Release/DesignTimeResolveAssemblyReferencesInput.cache
+*.vsidx
