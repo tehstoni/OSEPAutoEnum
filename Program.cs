@@ -49,7 +49,7 @@ namespace AutoEnum
                     ""No PowerShell history found.""
                 }",
                 ["Listing Services by Searching for a Specific Binary Name"] = "reg query HKLM\\SYSTEM\\CurrentControlSet\\Services /s /f \"Service.exe\" /t REG_EXPAND_SZ; reg query HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\CustomService",
-                ["Checking for Unquoted Service Path"] = "Get-WmiObject -Class win32_service | Where-Object {$_ -and ($Null -ne $_.pathname) -and ($_.pathname.Trim() -ne '') -and (-not $_.pathname.StartsWith(\"`\"\")) -and (-not $_.pathname.StartsWith(\"'\")) -and ($_.pathname.Substring(0, $_.pathname.ToLower().IndexOf('.exe') + 4)) -match '.* .*' }",
+                ["Checking for Unquoted Service Path"] = "gwmi -class Win32_Service -Property Name, DisplayName, PathName, StartMode | Where {$_.PathName -notlike \"C:\\Windows*\" -and $_.PathName -notlike '\"*'} | select PathName,DisplayName,Name",
                 ["Enumerating Applocker / Constrained Language Mode"] = "$ExecutionContext.SessionState.LanguageMode",
                 ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue",
                 ["IP Information"] = "ipconfig",
