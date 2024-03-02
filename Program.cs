@@ -12,13 +12,23 @@ namespace AutoEnum
             var commands = new Dictionary<string, string>
             {
                 ["Enumerating Network and Mapped Shares"] = "net share; get-smbmapping",
+
+
                 ["Listing Specific File Types in C:\\Users"] = "Get-ChildItem -Path C:\\Users -Include *.xml,*.txt,*.pdf,*.xls,*.xlsx,*.conf,*.doc,*.docx,id_rsa,authorized_keys,*.exe,*.log -File -Recurse -ErrorAction SilentlyContinue",
+
+
                 ["Listing Folders in C:\\Program Files, C:\\ProgramData, and C:\\Program Files (x86)"] = "Get-ChildItem -Path 'C:\\Program Files', 'C:\\Program Files (x86)', 'C:\\ProgramData' -Directory",
+
+
                 ["Listing All Folders in C:\\"] = "Get-ChildItem -Path 'C:\\' -Directory",
+
+
                 ["Enumerating Open Ports and Services"] = @"Get-NetTCPConnection | Where-Object {$_.State -eq 'Listen'} | Select-Object LocalAddress, LocalPort, OwningProcess | ForEach-Object {
                     $processName = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ProcessName
                     ""$($_.LocalAddress):$($_.LocalPort) is being listened on by $processName""
                 }",
+
+
                 ["Checking Write Permissions for C:\\inetpub\\wwwroot"] = @"if (Test-Path 'C:\inetpub\wwwroot') {
                     $hasWriteAccess = $false
                     try {
@@ -36,6 +46,8 @@ namespace AutoEnum
                 } else {
                     ""C:\inetpub\wwwroot does not exist.""
                 }",
+
+
                 ["Checking Sticky Notes and PowerShell History"] = @"$stickyNotesPath = 'C:\Users\*\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState\*'; $stickyFiles = Get-ChildItem -Path $stickyNotesPath -File -ErrorAction SilentlyContinue; if ($stickyFiles) {
                     ""Found Sticky Notes. You should manually check these for sensitive info:""
                     $stickyFiles.FullName
@@ -48,12 +60,26 @@ namespace AutoEnum
                 } else {
                     ""No PowerShell history found.""
                 }",
+
+
                 ["Listing Services by Searching for a Specific Binary Name"] = "reg query HKLM\\SYSTEM\\CurrentControlSet\\Services /s /f \"Service.exe\" /t REG_EXPAND_SZ; reg query HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\CustomService",
+
+
                 ["Checking for Unquoted Service Path"] = "gwmi -class Win32_Service -Property Name, DisplayName, PathName, StartMode | Where {$_.PathName -notlike \"C:\\Windows*\" -and $_.PathName -notlike '\"*' -and $_.PathName -notlike ''} | select PathName,DisplayName,Name",
+
+
                 ["Enumerating Applocker / Constrained Language Mode"] = "$ExecutionContext.SessionState.LanguageMode",
-                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue",
+
+
+                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include flag.txt,local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue",
+
+
                 ["IP Information"] = "ipconfig",
+
+
                 ["Hostname"] = "hostname",
+
+
 
             };
 
