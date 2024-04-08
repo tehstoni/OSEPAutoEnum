@@ -71,7 +71,7 @@ namespace AutoEnum
                 ["Enumerating Applocker / Constrained Language Mode"] = "$ExecutionContext.SessionState.LanguageMode",
 
 
-                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include flag.txt,local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue",
+                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\ -Include flag.txt,local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName ; Get-Content $_.FullName  }",
 
 
                 ["IP Information"] = "ipconfig",
