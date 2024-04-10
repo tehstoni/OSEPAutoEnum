@@ -2,6 +2,9 @@
 using System.Management.Automation;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading.Tasks;
+using System.Text; 
 
 namespace AutoEnum
 {
@@ -71,7 +74,10 @@ namespace AutoEnum
                 ["Enumerating Applocker / Constrained Language Mode"] = "$ExecutionContext.SessionState.LanguageMode",
 
 
-                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include flag.txt,local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue",
+                ["Checking for folders with RWX permissions"] = "Get-ChildItem -Path C:\\ -Directory -Recurse | ForEach-Object {$path = $_.FullName; $acl = Get-Acl -Path $path; $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $hasRWX = $false; foreach ($access in $acl.Access) {if ($access.IdentityReference -eq $currentUser) {$rights = $access.FileSystemRights; $hasRead = $rights -band [System.Security.AccessControl.FileSystemRights]::Read -eq [System.Security.AccessControl.FileSystemRights]::Read; $hasWrite = $rights -band [System.Security.AccessControl.FileSystemRights]::Write -eq [System.Security.AccessControl.FileSystemRights]::Write; $hasExecute = $rights -band [System.Security.AccessControl.FileSystemRights]::ExecuteFile -eq [System.Security.AccessControl.FileSystemRights]::ExecuteFile; if ($hasRead -and $hasWrite -and $hasExecute) {$hasRWX = $true; break;}}}; if ($hasRWX) {Write-Output $path;}}",
+
+
+                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include flag.txt,local.txt,proof.txt,secret.txt -File -Recurse -ErrorAction SilentlyContinue",
 
 
                 ["IP Information"] = "ipconfig",
@@ -83,40 +89,50 @@ namespace AutoEnum
 
             };
 
-            using (PowerShell powerShell = PowerShell.Create())
+
+            List<Task> tasks = new List<Task>();
+
+            foreach (var command in commands)
             {
-                foreach (var command in commands)
+                tasks.Add(Task.Run(() =>
                 {
-                    Console.WriteLine($"{command.Key}:\n");
-                    powerShell.AddScript(command.Value);
-                    Collection<PSObject> results = powerShell.Invoke();
-
-                    if (results.Count > 0)
+                    using (PowerShell powerShell = PowerShell.Create())
                     {
-                        foreach (PSObject result in results)
+                        StringBuilder outputBuilder = new StringBuilder();
+                        outputBuilder.AppendLine($"{command.Key}:\n");
+                        powerShell.AddScript(command.Value);
+                        Collection<PSObject> results = powerShell.Invoke();
+
+                        if (results.Count > 0)
                         {
-                            Console.WriteLine(result.ToString());
+                            foreach (PSObject result in results)
+                            {
+                                outputBuilder.AppendLine(result.ToString());
+                            }
+                        }
+                        else if (powerShell.Streams.Error.Count > 0)
+                        {
+                            outputBuilder.AppendLine("An error occurred.");
+                            foreach (var error in powerShell.Streams.Error)
+                            {
+                                outputBuilder.AppendLine(error.ToString());
+                            }
+                        }
+                        else
+                        {
+                            outputBuilder.AppendLine("No output or error.");
+                        }
+                        outputBuilder.AppendLine("--------------------------------------------------\n");
+
+                        lock (Console.Out)
+                        {
+                            Console.Write(outputBuilder.ToString());
                         }
                     }
-                    else if (powerShell.Streams.Error.Count > 0)
-                    {
-                        Console.WriteLine("An error occurred.");
-                        foreach (var error in powerShell.Streams.Error)
-                        {
-                            Console.WriteLine(error.ToString());
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No output or error.");
-                    }
-
-                    Console.WriteLine("--------------------------------------------------\n");
-
-                    powerShell.Commands.Clear(); // Clear previous commands
-                    powerShell.Streams.Error.Clear(); // Clear error stream for the next iteration
-                }
+                }));
             }
+
+            Task.WaitAll(tasks.ToArray()); 
         }
     }
 }
