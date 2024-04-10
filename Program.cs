@@ -77,15 +77,17 @@ namespace AutoEnum
                 ["Checking for folders with RWX permissions"] = "Get-ChildItem -Path C:\\ -Directory -Recurse | ForEach-Object {$path = $_.FullName; $acl = Get-Acl -Path $path; $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $hasRWX = $false; foreach ($access in $acl.Access) {if ($access.IdentityReference -eq $currentUser) {$rights = $access.FileSystemRights; $hasRead = $rights -band [System.Security.AccessControl.FileSystemRights]::Read -eq [System.Security.AccessControl.FileSystemRights]::Read; $hasWrite = $rights -band [System.Security.AccessControl.FileSystemRights]::Write -eq [System.Security.AccessControl.FileSystemRights]::Write; $hasExecute = $rights -band [System.Security.AccessControl.FileSystemRights]::ExecuteFile -eq [System.Security.AccessControl.FileSystemRights]::ExecuteFile; if ($hasRead -and $hasWrite -and $hasExecute) {$hasRWX = $true; break;}}}; if ($hasRWX) {Write-Output $path;}}",
 
 
-                ["Searching for flag files on the machine"] = "Get-ChildItem -Path C:\\ -Include flag.txt,local.txt,proof.txt,secret.txt -File -Recurse -ErrorAction SilentlyContinue",
+                ["Searching for flag files on the machine"] = @"Get-ChildItem -Path C:\ -Include flag.txt,root.txt,local.txt,proof.txt,secret.txt -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+                                                                    Write-Output $_.FullName
+                                                                    Get-Content $_.FullName
+                                                                    Write-Output ""------------------------------------------------""
+                                                                    }",
 
 
                 ["IP Information"] = "ipconfig",
 
 
                 ["Hostname"] = "hostname",
-
-
 
             };
 
